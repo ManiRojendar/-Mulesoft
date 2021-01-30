@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="63172fb1-7834-447a-a243-745bb47fc6ac" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="demo-2Flow" doc:id="7bb6b6ce-17d1-4ce9-b008-8a494fdd8c3e" >
+		<http:listener doc:name="Listener" doc:id="03c1040b-3469-4943-ac56-a10697ce5ae5" config-ref="HTTP_Listener_config" path="/demo2"/>
+		<logger level="INFO" doc:name="Logger" doc:id="85dc91f1-3f9d-48b8-b7ba-7a622dc22a14" message="** Before logger **"/>
+		<set-variable value="#[attributes.queryParams.number1]" doc:name="Set Variable" doc:id="8124efea-b5af-47eb-93c4-5cd725e197e5" variableName="num1"/>
+		<set-variable value="#[attributes.queryParams.number2]" doc:name="Set Variable" doc:id="f9296279-0f65-4124-b9f6-9d919799c631" variableName="num2"/>
+		<set-variable value="#[attributes.queryParams.operation]" doc:name="Set Variable" doc:id="b96be452-0ce3-4eb4-a8cb-04280c082a4c" variableName="opreration"/>
+		<choice doc:name="Choice_Cal" doc:id="a9a8f25f-8c58-4a2e-984a-9b2598657c2f" >
+			<when expression='#[vars.opreration == "ADD"]'>
+				<set-payload value="#[%dw 2.0
+output application/json
+---
+{
+	Result:	vars.num1 as Number + vars.num2 as Number
+}]" doc:name="Add" doc:id="a4825034-0dd7-4f4e-bc8e-fb564f8955e8" />
+			</when>
+			<when expression='#[vars.opreration == "sub"]'>
+				<set-payload doc:name="Sub" doc:id="bebbd24d-8c5d-4878-a336-efff867e5e77" value="#[%dw 2.0
+output application/json
+---
+{
+	Result:	vars.num1 as Number - vars.num2 as Number
+}]"/>
+			</when>
+			<when expression='#[vars.opreration == "mul"]'>
+				<set-payload value='#[%dw 2.0
+output application/json
+---
+{
+	Result:	vars.num1 as Number * vars.num2 as Number
+}]' doc:name="mul" doc:id="a65c7d0c-eabf-43b8-b103-1b8100150787" />
+			</when>
+			<when expression='#[vars.opreration == "div"]'>
+				<set-payload value="#[%dw 2.0
+output application/json
+---
+{
+	Result:	vars.num1 as Number / vars.num2 as Number
+}]" doc:name="Set Payload" doc:id="18ba12a6-0d99-4436-a033-02fe1cb3e506" />
+			</when>
+			<otherwise>
+				<set-payload doc:name="Set Payload" doc:id="c827fcd1-26ea-4175-b72e-cfae5ceba464" value="not select wrong"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="6857a4fe-cb22-4af4-b247-6fd6098e65c0" message="#[payload]"/>
+	</flow>
+</mule>
