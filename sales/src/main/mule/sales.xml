@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="9f3852b7-f570-4885-8488-bdcb1aea34d8" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="2794c308-c63a-411b-bef9-15a93462bf4b" >
+		<salesforce:basic-connection username="${sfdc.username}" password="${sfdc.password}" securityToken="${sfdc.tokennumber}" url="${sfdc.loginURl}" />
+	</salesforce:sfdc-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="afd25e06-f6a7-43ca-b266-73a2457bc830" file="config.properties" />
+	<salesforce:sfdc-config name="Salesforce_Config1" doc:name="Salesforce Config" doc:id="52a533bb-9da5-44c8-b097-2142a98ce799" >
+		<salesforce:basic-connection username="mani.mulesoft@gmail.com" password="Mule@12345" securityToken="nMCjLlRjXrGPGoRIcAC0cn2eo" url="https://login.salesforce.com/services/Soap/u/49.0" />
+	</salesforce:sfdc-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="860fbcea-d562-4ebf-ae09-8f6fcf8ea9e5" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="123456" database="mani" />
+	</db:config>
+	<flow name="salesFlow" doc:id="1ad8ba44-0571-4042-8de1-fc1ce044737b" >
+		<http:listener doc:name="Listener" doc:id="bb56dbce-271b-4726-9dae-fa251f8a1548" config-ref="HTTP_Listener_config" path="/s"/>
+		<salesforce:query doc:name="Query" doc:id="30b2ee6d-291d-4c9f-9605-06970227565e" config-ref="Salesforce_Config1">
+			<salesforce:salesforce-query ><![CDATA[SELECT Id,FirstName,LastName,Email,Phone FROM Contact limit 3]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="363ec33c-5907-4d40-b8e8-0f7c8307ad2a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="862fa9df-8ee6-4118-aaae-b485d7bf0af9" message="Final output"/>
+	</flow>
+	<flow name="salesFlow1" doc:id="2ec11961-2f74-4587-a6b4-3cc284f21438" >
+		<http:listener doc:name="Listener" doc:id="b1e5016e-ec1b-408b-98ee-1a4baa0b50a0" config-ref="HTTP_Listener_config" path="/sales1"/>
+		<db:insert doc:name="Insert" doc:id="088674c2-d7aa-40dc-b224-7e77ac9e97c9" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO student (sn,name,sname,phone) VALUES ("546456","qwerty","fbc","9823566");]]></db:sql>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="074c6002-1513-4a4e-8dd5-5b5fd5737ef2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
